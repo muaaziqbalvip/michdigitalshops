@@ -1,107 +1,52 @@
-# MICH Digital Shop 🚀
-**Pakistan's #1 Premium Reseller Marketplace**
-Pure HTML + CSS + JavaScript PWA — No build tools needed!
+# MICH Digital Shop v3 — Upgrade Notes
 
----
+## ✅ What's New in v3
 
-## ⚡ Deploy in 60 Seconds (Vercel)
+### 🎉 Eid ul Adha (27-29 June 2026)
+- Animated Eid banner at top with gold glow
+- Live countdown timer on Home page
+- Eid category chip in catalog filter
+- Sheep animation 🐑
 
-1. Go to **vercel.com** → New Project
-2. Upload this folder OR connect GitHub repo
-3. No build settings needed — just deploy!
-4. Set custom domain: **michshop.vercel.app**
+### 🖼️ Image Improvements
+- Full Lightbox viewer — tap any product image to see full-size
+- Swipe/arrow navigation between multiple images
+- Keyboard support (ESC, ←, →)
+- Thumbnail strip in catalog detail
 
----
+### 📱 Social Sharing
+- WhatsApp, Telegram, Facebook, Copy Link all in one row
+- Personal Reseller link (with your ref code) shown to logged-in resellers
+- Share page redesigned — clean customer view with no profit info shown
 
-## 🔧 Firebase Setup (IMPORTANT)
+### 💼 Reseller Registration
+- "Become a Reseller" card on home page
+- Modal with step-by-step instructions
+- JazzCash 03062015326 — ₨50 investment required
+- One-tap WhatsApp to admin
 
-Go to **Firebase Console** → `ramadan-2385b` project:
+### 🔄 Catalog On/Off Toggle (Admin)
+- Toggle switch next to each product in Admin → Products
+- Instantly hide/show catalog from customers
 
-### Enable Authentication:
-- Email/Password ✅
-- Google ✅
+### 🗺️ SEO & Google Search
+- sitemap.xml — submit to Google Search Console
+- robots.txt added
+- Structured data (Schema.org) for products and organization
+- Full Open Graph + Twitter Card meta
+- Google rich results ready
+- Fast caching headers via vercel.json
 
-### Create Firestore Database:
-- Start in **Test Mode** first
-- Then apply these security rules:
+### ⚡ Performance
+- Service worker v3 with better cache strategy
+- PWA shortcuts for home screen
+- Manifest updated with Urdu locale
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{uid} {
-      allow read, write: if request.auth.uid == uid;
-      allow read: if request.auth != null;
-    }
-    match /catalogs/{doc} {
-      allow read: if true;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    match /orders/{doc} {
-      allow create: if true;
-      allow read, update: if request.auth != null;
-    }
-    match /earnings/{doc} {
-      allow read, write: if request.auth != null;
-    }
-    match /withdrawals/{doc} {
-      allow create: if request.auth != null;
-      allow read, update: if request.auth != null;
-    }
-    match /shares/{doc}   { allow read, write: if true; }
-    match /clients/{doc}  { allow read, write: if request.auth != null; }
-    match /notifications/{doc} { allow read, write: if request.auth != null; }
-    match /settings/{doc} { allow read: if true; }
-  }
-}
-```
+## 🚀 Deploy to Vercel
+1. Unzip this folder
+2. Upload to Vercel (vercel.com)
+3. Submit sitemap.xml to Google Search Console
+4. Done!
 
-### Make yourself Admin:
-1. Login to your app
-2. Go to Firebase Console → Firestore → `users` collection
-3. Find your user document
-4. Edit `role` field → change to `admin`
-5. Refresh the app
-
----
-
-## 📁 File Structure
-```
-michshop/
-├── index.html       ← Main app (SPA shell)
-├── css/styles.css   ← All styles
-├── js/app.js        ← Complete app logic + Firebase
-├── manifest.json    ← PWA config
-├── sw.js            ← Service worker (offline)
-└── icons/           ← App icons (add your icons here)
-```
-
----
-
-## 🎨 Features Included
-- ✅ Google + Email Authentication
-- ✅ Product Catalog with Search & Filter
-- ✅ Order System (Physical + Digital)
-- ✅ Earnings Dashboard with Charts
-- ✅ Withdrawal System (JazzCash, Easypaisa, etc.)
-- ✅ Admin Panel (Users, Products, Orders, Withdrawals)
-- ✅ WhatsApp / Facebook / Telegram Sharing
-- ✅ Shareable Product Links
-- ✅ Referral System
-- ✅ Client Management
-- ✅ PWA (Installable on mobile)
-- ✅ Glassmorphism Neon Dark UI
-- ✅ Mobile App Feel (Bottom Navigation)
-
----
-
-## 📱 App Icons
-Add these to the `/icons/` folder:
-- `icon-192.png` (192×192 px)
-- `icon-512.png` (512×512 px)
-
-Use your MICH logo: https://i.ibb.co/twVpRFKh/file-0000000018807208a673a881d0f0e953.png
-
----
-
-**Made with ❤️ for MICH Digital Shop**
+## 📞 Admin Contact
+JazzCash: 03062015326

@@ -1481,7 +1481,7 @@ function adminTab(tab, btn) {
   const el = document.getElementById('admin-content');
   if (!el) return;
   if (tab==='orders')      el.innerHTML = renderAdminOrders(window._adminOrders||[]);
-  if (tab==='products')    el.innerHTML = renderAdminProducts(window._adminCats||[]);
+  if (tab==='products')    el.innerHTML = renderAdminProductsV3(window._adminCats||[]);
   if (tab==='users')       el.innerHTML = renderAdminUsers(window._adminUsers||[]);
   if (tab==='withdrawals') el.innerHTML = renderAdminWithdrawals(window._adminWDs||[]);
 }
@@ -1658,7 +1658,7 @@ async function submitAddProduct() {
     allCatalogs = await getCatalogs(100);
     const cats = window._adminCats = allCatalogs;
     const el   = document.getElementById('admin-content');
-    if (el) el.innerHTML = renderAdminProducts(cats);
+    if (el) el.innerHTML = renderAdminProductsV3(cats);
   } catch(e) { showToast('Failed to add product','error'); console.error(e); }
   if (btn) { btn.disabled=false; btn.textContent='Add Product'; }
 }
@@ -1734,7 +1734,7 @@ async function submitEditProduct(id) {
     allCatalogs = await getCatalogs(100);
     window._adminCats = allCatalogs;
     const el = document.getElementById('admin-content');
-    if (el) el.innerHTML = renderAdminProducts(allCatalogs);
+    if (el) el.innerHTML = renderAdminProductsV3(allCatalogs);
   } catch(e) { showToast('Failed to update product','error'); console.error(e); }
   if (btn) { btn.disabled=false; btn.textContent='Save Changes'; }
 }
@@ -1746,7 +1746,7 @@ async function confirmDeleteProduct(id) {
   allCatalogs = allCatalogs.filter(c=>c.id!==id);
   window._adminCats = allCatalogs;
   const el = document.getElementById('admin-content');
-  if (el) el.innerHTML = renderAdminProducts(allCatalogs);
+  if (el) el.innerHTML = renderAdminProductsV3(allCatalogs);
 }
 
 async function showUserActions(uid, name, role) {
@@ -1833,17 +1833,17 @@ function navigate(page, params={}) {
   updateActiveNav();
 
   switch (page) {
-    case 'home':     renderHome();                break;
-    case 'auth':     renderAuth();                break;
-    case 'catalogs': renderCatalogs(params);      break;
-    case 'catalog':  renderCatalogDetail(params); break;
-    case 'earnings': renderEarnings();            break;
-    case 'orders':   renderOrders();              break;
-    case 'clients':  renderClients();             break;
-    case 'profile':  renderProfile();             break;
-    case 'admin':    renderAdmin();               break;
-    case 'share':    renderShare(params);         break;
-    default:         renderHome();
+    case 'home':     renderHomeV3();                 break;
+    case 'auth':     renderAuth();                   break;
+    case 'catalogs': renderCatalogs(params);         break;
+    case 'catalog':  renderCatalogDetailV3(params);  break;
+    case 'earnings': renderEarnings();               break;
+    case 'orders':   renderOrders();                 break;
+    case 'clients':  renderClients();                break;
+    case 'profile':  renderProfile();                break;
+    case 'admin':    renderAdmin();                  break;
+    case 'share':    renderShareV3(params);          break;
+    default:         renderHomeV3();
   }
   closeMobileMenu();
 }
@@ -1858,6 +1858,615 @@ if ('serviceWorker' in navigator) {
 }
 
 // ════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════
+// V3 UPGRADES — Lightbox · Eid Banner · Catalog Toggle
+//               Reseller Registration · Sitemap · Fast Share
+// ════════════════════════════════════════════════════════════════
+
+// ─── LIGHTBOX ────────────────────────────────────────────────────
+let _lightboxImages = [];
+let _lightboxIndex  = 0;
+
+function openLightbox(images, startIndex = 0) {
+  _lightboxImages = Array.isArray(images) ? images : [images];
+  _lightboxIndex  = startIndex;
+  updateLightbox();
+  document.getElementById('lightbox').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function updateLightbox() {
+  const img = document.getElementById('lightbox-img');
+  const ctr = document.getElementById('lightbox-counter');
+  if (img) img.src = _lightboxImages[_lightboxIndex];
+  if (ctr) ctr.textContent = `${_lightboxIndex + 1} / ${_lightboxImages.length}`;
+}
+
+function lightboxPrev(e) {
+  if (e) e.stopPropagation();
+  _lightboxIndex = (_lightboxIndex - 1 + _lightboxImages.length) % _lightboxImages.length;
+  updateLightbox();
+}
+
+function lightboxNext(e) {
+  if (e) e.stopPropagation();
+  _lightboxIndex = (_lightboxIndex + 1) % _lightboxImages.length;
+  updateLightbox();
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (lb && !lb.classList.contains('hidden')) {
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft')   lightboxPrev();
+    if (e.key === 'ArrowRight')  lightboxNext();
+  }
+});
+
+// ─── EID UL ADHA COUNTDOWN ──────────────────────────────────────
+function getEidCountdown() {
+  const eidDate = new Date('2026-06-27T00:00:00');
+  const now     = new Date();
+  const diff    = eidDate - now;
+  if (diff <= 0) return null; // Eid has started
+  const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return { days, hours, mins };
+}
+
+function renderEidHeroCard() {
+  const cd = getEidCountdown();
+  if (!cd) {
+    // Eid is here!
+    return `
+      <div class="eid-hero-card section">
+        <div class="eid-sheep-anim">🐑</div>
+        <div class="eid-hero-title">🌙 عید الاضحی مبارک! 🌙</div>
+        <div class="eid-hero-sub">Eid ul Adha Special Sale — 27-29 June 2026</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn-neon lg" onclick="navigate('catalogs',{category:'eid'})">🐑 Eid Deals →</button>
+          <button class="btn-outline lg" onclick="navigate('catalogs')">Browse All</button>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="eid-hero-card section">
+      <div class="eid-sheep-anim">🐑</div>
+      <div class="eid-hero-title">🌙 Eid ul Adha Sale 🌙</div>
+      <div class="eid-hero-sub">Special discounts starting 27 June!</div>
+      <div class="eid-countdown">
+        <div class="eid-count-item">
+          <div class="eid-count-num">${cd.days}</div>
+          <div class="eid-count-label">Days</div>
+        </div>
+        <div class="eid-count-item" style="color:#ffd700;font-size:1.5rem;align-self:flex-start;margin-top:8px">:</div>
+        <div class="eid-count-item">
+          <div class="eid-count-num">${cd.hours}</div>
+          <div class="eid-count-label">Hours</div>
+        </div>
+        <div class="eid-count-item" style="color:#ffd700;font-size:1.5rem;align-self:flex-start;margin-top:8px">:</div>
+        <div class="eid-count-item">
+          <div class="eid-count-num">${cd.mins}</div>
+          <div class="eid-count-label">Minutes</div>
+        </div>
+      </div>
+      <button class="btn-neon" onclick="navigate('catalogs')">🛍️ Shop Now →</button>
+    </div>`;
+}
+
+// ─── CATALOG TOGGLE (Admin: On/Off) ─────────────────────────────
+async function toggleCatalogStatus(id, currentlyActive) {
+  try {
+    await fdb.collection('catalogs').doc(id).update({
+      active: !currentlyActive,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast(currentlyActive ? 'Catalog hidden 🔴' : 'Catalog live 🟢', 'success');
+    // Refresh admin products list
+    allCatalogs = await getCatalogs(100);
+    window._adminCats = allCatalogs;
+    const el = document.getElementById('admin-content');
+    if (el) el.innerHTML = renderAdminProductsV3(allCatalogs);
+  } catch(e) {
+    showToast('Failed to toggle catalog', 'error');
+  }
+}
+
+// ─── RESELLER REGISTRATION FLOW ─────────────────────────────────
+function showResellerRegModal() {
+  openModal(`
+    <div class="modal-header">
+      <h3>💼 Become a Reseller</h3>
+      <button class="modal-close" onclick="closeModalForce()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="reseller-invest-card">
+        <h3>One-Time Investment</h3>
+        <div class="invest-amount">₨50</div>
+        <p style="color:var(--text3);font-size:0.85rem;margin-bottom:12px">
+          Send ₨50 to activate your Reseller account and start earning!
+        </p>
+        <div class="jazzcash-number" onclick="copyJazzCash()">
+          📱 JazzCash: 03062015326
+        </div>
+        <div style="font-size:0.72rem;color:var(--text4);margin-top:6px">Tap to copy number</div>
+      </div>
+      <div class="invest-steps">
+        <div class="invest-step">
+          <div class="invest-step-num">1</div>
+          <div class="invest-step-text">Send ₨50 to <strong>03062015326</strong> (JazzCash)</div>
+        </div>
+        <div class="invest-step">
+          <div class="invest-step-num">2</div>
+          <div class="invest-step-text">Screenshot your payment receipt</div>
+        </div>
+        <div class="invest-step">
+          <div class="invest-step-num">3</div>
+          <div class="invest-step-text">WhatsApp your screenshot to <strong>03062015326</strong></div>
+        </div>
+        <div class="invest-step">
+          <div class="invest-step-num">4</div>
+          <div class="invest-step-text">Admin will activate your Reseller account within hours!</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn-neon btn-block" onclick="window.open('https://wa.me/923062015326?text=Hi!%20I%20want%20to%20become%20a%20Reseller.%20I%20sent%20Rs50%20to%20JazzCash%2003062015326','_blank')">
+          📲 WhatsApp Admin
+        </button>
+        <button class="btn-outline btn-block" onclick="closeModalForce()">Close</button>
+      </div>
+    </div>
+  `);
+}
+
+function copyJazzCash() {
+  navigator.clipboard.writeText('03062015326').then(() => showToast('JazzCash number copied! 📋', 'success'));
+}
+
+// ─── ENHANCED SHARE with all social platforms ────────────────────
+function shareOnInstagram(catalog) {
+  const url = generateShareUrl(catalog.id);
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Link copied! Paste it in Instagram bio/story 📷', 'info');
+  });
+}
+
+function shareNative(catalog) {
+  const url  = generateShareUrl(catalog.id);
+  const sym  = CURRENCY_SYM[catalog.currency] || '₨';
+  const text = `🛍️ ${catalog.title}\n💰 Price: ${sym}${fmt(catalog.resellerPrice||catalog.price)}\n✅ Order: ${url}`;
+  if (navigator.share) {
+    navigator.share({ title: catalog.title, text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text + '\n' + url).then(() => showToast('Copied to clipboard! 📋', 'success'));
+  }
+}
+
+// ─── RENDER ENHANCED SOCIAL SHARE BUTTONS ───────────────────────
+function renderShareButtons(catalog) {
+  const catalogJson = JSON.stringify(catalog).replace(/"/g, '&quot;');
+  return `
+    <div class="social-share-row" style="margin-bottom:8px">
+      <button class="share-btn share-btn-wa" onclick="shareOnWhatsApp(${catalogJson})">📲 WhatsApp</button>
+      <button class="share-btn share-btn-tg" onclick="shareOnTelegram(${catalogJson})">✈️ Telegram</button>
+    </div>
+    <div class="social-share-row" style="margin-bottom:8px">
+      <button class="share-btn share-btn-fb" onclick="shareOnFacebook(${catalogJson})">👍 Facebook</button>
+      <button class="share-btn share-btn-copy" onclick="shareNative(${catalogJson})">🔗 Share</button>
+    </div>
+    <div class="copy-link-box">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${generateShareUrl(catalog.id)}</span>
+      <button class="copy-link-btn" onclick="copyLink('${catalog.id}')">Copy</button>
+    </div>`;
+}
+
+// ─── SITEMAP GENERATOR ──────────────────────────────────────────
+async function generateSitemap() {
+  try {
+    const catalogs = await getCatalogs(200);
+    const baseUrl  = APP_URL;
+    const today    = new Date().toISOString().split('T')[0];
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${baseUrl}/</loc><lastmod>${today}</lastmod><priority>1.0</priority></url>
+  <url><loc>${baseUrl}/?page=catalogs</loc><lastmod>${today}</lastmod><priority>0.9</priority></url>
+`;
+    catalogs.forEach(c => {
+      xml += `  <url><loc>${baseUrl}/?share=${c.id}</loc><lastmod>${today}</lastmod><priority>0.8</priority></url>\n`;
+    });
+    xml += '</urlset>';
+    const blob = new Blob([xml], { type:'application/xml' });
+    const a    = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sitemap.xml';
+    a.click();
+    showToast('Sitemap downloaded! Upload to your hosting root 🗺️', 'success');
+  } catch(e) {
+    showToast('Failed to generate sitemap', 'error');
+  }
+}
+
+// ─── ENHANCED CATALOG DETAIL with Lightbox & Better Share ───────
+async function renderCatalogDetailV3(params={}) {
+  const { id, order } = params;
+  setContent(`<div class="page"><div style="text-align:center;padding:60px 0"><div style="font-size:3rem">⏳</div><p style="color:var(--text3);margin-top:12px">Loading product...</p></div></div>`);
+
+  const c = await getCatalogById(id);
+  if (!c) {
+    setContent(`<div class="page"><div class="empty"><div class="empty-icon">😕</div><div class="empty-title">Product not found</div><button class="btn-neon sm" onclick="navigate('catalogs')">Browse Catalog</button></div></div>`);
+    return;
+  }
+
+  incrementViews(id);
+  const sym    = CURRENCY_SYM[c.currency] || '₨';
+  const price  = c.resellerPrice || c.price || 0;
+  const profit = (c.resellerPrice || 0) - (c.price || 0);
+  const isReseller = userProfile && ['reseller','marketer','admin'].includes(userProfile.role);
+  const images = c.images || [];
+
+  // Build my personal reseller share URL
+  const myShareUrl = currentUser
+    ? `${APP_URL}/?share=${id}&ref=${userProfile?.referralCode || currentUser.uid.slice(0,8)}`
+    : generateShareUrl(id);
+
+  setContent(`
+    <div class="page">
+      <button onclick="navigate('catalogs')" style="display:flex;align-items:center;gap:4px;color:var(--text3);font-size:0.875rem;margin-bottom:16px;transition:var(--transition)" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text3)'">← Back to Catalog</button>
+
+      <!-- SEO structured data for this product -->
+      <script type="application/ld+json">
+      ${JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": c.title,
+        "description": c.description || '',
+        "image": images[0] || '',
+        "offers": { "@type": "Offer", "price": price, "priceCurrency": c.currency || 'PKR', "availability": c.stock > 0 ? "InStock" : "OutOfStock" }
+      })}
+      <\/script>
+
+      <div class="detail-grid">
+        <!-- Image Gallery with Lightbox -->
+        <div class="img-gallery">
+          <div class="img-main" style="cursor:zoom-in" onclick="openLightbox(${JSON.stringify(images)}, 0)">
+            ${images[0]
+              ? `<img id="main-img" src="${images[0]}" alt="${c.title}" style="width:100%;height:100%;object-fit:cover" />`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem">📦</div>`}
+          </div>
+          ${images.length > 0 ? `<div style="font-size:0.72rem;color:var(--text4);text-align:center;margin-top:4px">👆 Tap to view full size</div>` : ''}
+          ${images.length > 1 ? `
+            <div class="img-thumbs">
+              ${images.map((img, i) => `
+                <div class="img-thumb ${i===0?'active':''}" onclick="switchImgV3('${img}',this,${i},${JSON.stringify(images).replace(/"/g,'&quot;')})">
+                  <img src="${img}" alt="" />
+                </div>`).join('')}
+            </div>` : ''}
+        </div>
+
+        <!-- Info -->
+        <div>
+          ${c.category ? `<div style="font-size:0.75rem;color:var(--blue);margin-bottom:8px">📁 ${c.category}</div>` : ''}
+          <h1 style="font-size:1.5rem;font-weight:900;line-height:1.3;margin-bottom:16px">${c.title}</h1>
+
+          <!-- Price card -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:flex-end;gap:12px">
+              <div>
+                <div style="font-size:2rem;font-weight:900;color:var(--blue)">${sym}${fmt(price)}</div>
+              </div>
+              ${isReseller && profit > 0 ? `<div style="margin-left:auto;text-align:right">
+                <div style="font-size:0.72rem;color:var(--text3)">Your Profit</div>
+                <div style="font-size:1.2rem;font-weight:800;color:var(--green)">+${sym}${fmt(profit)}</div>
+              </div>` : ''}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text3);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap">
+              <span>👁 ${c.views || 0} views</span>
+              ${c.stock > 0 ? `<span style="color:var(--green)">✓ In Stock (${c.stock})</span>` : `<span style="color:var(--red)">Out of Stock</span>`}
+              <span class="badge badge-${c.type||'physical'}">${c.type==='digital'?'⚡ Digital':'📦 Physical'}</span>
+            </div>
+          </div>
+
+          ${c.description ? `
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:0.8rem;color:var(--text3);font-weight:600;margin-bottom:8px">Description</div>
+            <p style="font-size:0.9rem;color:var(--text2);line-height:1.6">${c.description}</p>
+          </div>` : ''}
+
+          ${c.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">${c.tags.map(t=>`<span class="badge" style="background:var(--glass);color:var(--text3);border:1px solid var(--border)">#${t}</span>`).join('')}</div>` : ''}
+
+          <!-- Order Button -->
+          <button class="btn-neon btn-block" style="margin-bottom:12px;font-size:1rem;padding:14px" onclick="showOrderModal('${id}')">🛒 Order Now</button>
+
+          <!-- Share Section -->
+          <div class="card" style="margin-bottom:12px">
+            <div style="font-size:0.8rem;color:var(--text3);font-weight:600;margin-bottom:10px">📤 Share & Earn</div>
+            ${renderShareButtons(c)}
+          </div>
+
+          ${currentUser && isReseller ? `
+          <div class="card" style="margin-bottom:12px;border-color:rgba(0,212,255,0.2);background:rgba(0,212,255,0.04)">
+            <div style="font-size:0.78rem;color:var(--blue);font-weight:600;margin-bottom:8px">🔗 Your Personal Reseller Link</div>
+            <div class="copy-link-box">
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.75rem">${myShareUrl}</span>
+              <button class="copy-link-btn" onclick="navigator.clipboard.writeText('${myShareUrl}').then(()=>showToast('Your personal link copied! 📋','success'))">Copy</button>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text4);margin-top:6px">Orders via this link are tracked to your account</div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>
+  `);
+
+  if (order) setTimeout(() => showOrderModal(id, c), 300);
+}
+
+// Enhanced switchImg that also updates lightbox context
+function switchImgV3(src, el, idx, imagesJson) {
+  const main = document.getElementById('main-img');
+  if (main) main.src = src;
+  document.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  _lightboxImages = imagesJson;
+  _lightboxIndex  = idx;
+}
+
+// ─── ADMIN PRODUCT LIST — with Catalog Toggle ────────────────────
+function renderAdminProductsV3(cats) {
+  return `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <button class="btn-neon sm" onclick="showAddProductModal()">+ Add Product</button>
+      <button class="btn-outline sm" onclick="generateSitemap()">🗺️ Download Sitemap</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      ${cats.length === 0
+        ? `<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">No products</div></div>`
+        : cats.map(c => `
+          <div class="list-item">
+            <div style="width:40px;height:40px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--bg3)">
+              ${c.images?.[0]
+                ? `<img src="${c.images[0]}" style="width:100%;height:100%;object-fit:cover" />`
+                : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">📦</div>'}
+            </div>
+            <div class="list-info">
+              <div class="list-name">${c.title}</div>
+              <div class="list-sub">₨${fmt(c.resellerPrice||c.price)} · ${c.type||'physical'} · 👁 ${c.views||0}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <!-- On/Off Toggle -->
+              <div class="catalog-toggle" onclick="toggleCatalogStatus('${c.id}',${!!c.active})" title="${c.active ? 'Click to hide' : 'Click to show'}">
+                <div class="toggle-switch ${c.active ? 'on' : ''}"></div>
+              </div>
+              <button class="btn-outline sm" onclick="showEditProductModal('${c.id}')">Edit</button>
+              <button class="btn-red sm" style="padding:6px 10px;border-radius:8px;font-size:0.78rem" onclick="confirmDeleteProduct('${c.id}')">Del</button>
+            </div>
+          </div>`).join('')}
+    </div>`;
+}
+
+// ─── RENDER HOME V3 with Eid Banner ─────────────────────────────
+async function renderHomeV3() {
+  const eidSection = renderEidHeroCard();
+
+  setContent(`
+    <div class="page" style="padding-top:0;padding-left:0;padding-right:0;max-width:100%">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-content">
+          <div class="hero-badge"><span class="pulse-dot"></span> Pakistan's #1 Reseller Marketplace</div>
+          <h1>Sell Products,<br><span class="gradient-text">Earn Money</span><br><span style="color:var(--text2)">From Anywhere</span></h1>
+          <p>Join 1,200+ resellers already earning daily with physical &amp; digital products. Share, sell, grow.</p>
+          <div class="hero-btns">
+            ${currentUser
+              ? `<button class="btn-neon lg" onclick="navigate('catalogs')">Browse Products →</button>
+                 <button class="btn-outline lg" onclick="navigate('earnings')">My Earnings 💰</button>`
+              : `<button class="btn-neon lg" onclick="navigate('auth')">Start Earning Free 🚀</button>
+                 <button class="btn-outline lg" onclick="navigate('catalogs')">Browse Products</button>`}
+          </div>
+          <div class="hero-stats">
+            <div><div class="hero-stat-val gradient-text">500+</div><div class="hero-stat-label">Products</div></div>
+            <div><div class="hero-stat-val gradient-text">1,200+</div><div class="hero-stat-label">Resellers</div></div>
+            <div><div class="hero-stat-val gradient-text">₨50L+</div><div class="hero-stat-label">Paid Out</div></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="page" style="padding-top:8px">
+        <!-- Eid ul Adha Banner -->
+        ${eidSection}
+
+        <!-- Reseller CTA if not logged in or is customer -->
+        ${!currentUser || userProfile?.role === 'customer' ? `
+        <div class="card" style="margin-bottom:24px;border-color:rgba(0,212,255,0.2);background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(139,92,246,0.04));text-align:center;padding:20px">
+          <div style="font-size:2rem;margin-bottom:8px">💼</div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:4px">Become a <span class="gradient-text">Reseller</span></div>
+          <div style="font-size:0.8rem;color:var(--text3);margin-bottom:12px">Only ₨50 investment — Earn on every sale!</div>
+          <button class="btn-neon sm" onclick="showResellerRegModal()">Join as Reseller →</button>
+        </div>` : ''}
+
+        <!-- Live Stats -->
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">📊 Live <span class="gradient-text">Statistics</span></div></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--blue)">
+              <div class="pulse-dot" style="width:6px;height:6px"></div> Live
+            </div>
+          </div>
+          <div class="counters-grid" id="counters-grid">
+            ${[
+              {icon:'📦',label:'Products',val:'500+',color:'var(--blue)'},
+              {icon:'👥',label:'Resellers',val:'1,200+',color:'var(--purple)'},
+              {icon:'🛒',label:'Orders',val:'8,500+',color:'var(--orange)'},
+              {icon:'💰',label:'Paid Out',val:'₨50L+',color:'var(--green)'},
+              {icon:'📤',label:'Daily Shares',val:'350+',color:'var(--pink)'},
+              {icon:'⭐',label:'Happy Clients',val:'4,200+',color:'var(--yellow)'},
+            ].map(c => `
+              <div class="card counter-card">
+                <div class="counter-icon">${c.icon}</div>
+                <div class="counter-val" style="color:${c.color}">${c.val}</div>
+                <div class="counter-label">${c.label}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">🗂️ <span class="gradient-text">Categories</span></div></div>
+            <a class="section-link" onclick="navigate('catalogs')">All →</a>
+          </div>
+          <div class="cat-scroll">
+            ${[
+              {icon:'🐑',label:'Eid Deals',slug:'eid'},
+              {icon:'📱',label:'Mobiles',slug:'mobiles'},
+              {icon:'💻',label:'Electronics',slug:'electronics'},
+              {icon:'👗',label:'Fashion',slug:'fashion'},
+              {icon:'🎓',label:'Education',slug:'education'},
+              {icon:'🎬',label:'Entertainment',slug:'entertainment'},
+              {icon:'💻',label:'Software',slug:'software'},
+              {icon:'🎵',label:'Music',slug:'music'},
+              {icon:'🎁',label:'Gift Cards',slug:'giftcards'},
+              {icon:'💄',label:'Beauty',slug:'beauty'},
+              {icon:'⚡',label:'Digital',slug:'digital'},
+            ].map(c => `
+              <div class="cat-chip" onclick="navigate('catalogs',{category:'${c.slug}'})">
+                <span class="cat-chip-icon">${c.icon}</span>
+                <span class="cat-chip-label">${c.label}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Trending Products -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <div class="section-title">⚡ Trending <span class="gradient-text">Products</span></div>
+              <div class="section-subtitle">Hot sellers right now</div>
+            </div>
+            <a class="section-link" onclick="navigate('catalogs')">View all →</a>
+          </div>
+          <div class="products-grid" id="trending-grid">
+            ${skeletonCards(6)}
+          </div>
+        </div>
+
+        <!-- All Products -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <div class="section-title">🛍️ Latest <span class="gradient-text">Products</span></div>
+              <div class="section-subtitle" id="products-count">Loading...</div>
+            </div>
+            <a class="section-link" onclick="navigate('catalogs')">See all →</a>
+          </div>
+          <div class="products-grid" id="home-products-grid">
+            ${skeletonCards(8)}
+          </div>
+        </div>
+
+        ${!currentUser ? `
+        <div class="card" style="text-align:center;padding:40px 24px;margin-bottom:24px;border-color:rgba(0,212,255,0.2);background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(139,92,246,0.06))">
+          <div style="font-size:3rem;margin-bottom:12px">🚀</div>
+          <h2 style="font-size:1.5rem;font-weight:900;margin-bottom:8px">Start Earning Today — <span class="gradient-text">It's Free!</span></h2>
+          <p style="color:var(--text3);margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto">Join thousands of resellers. Only ₨50 to activate reseller mode. Start sharing in minutes.</p>
+          <button class="btn-neon lg" onclick="navigate('auth')">⭐ Create Free Account</button>
+        </div>` : ''}
+      </div>
+    </div>
+  `);
+
+  // Load products async
+  const catalogs = await getCatalogs(20);
+  allCatalogs = catalogs;
+  const el1 = document.getElementById('trending-grid');
+  const el2 = document.getElementById('home-products-grid');
+  const cnt  = document.getElementById('products-count');
+  if (el1) el1.innerHTML = renderProductCards(catalogs.slice(0, 6));
+  if (el2) el2.innerHTML = renderProductCards(catalogs);
+  if (cnt) cnt.textContent = `${catalogs.length} products available`;
+}
+
+// ─── ENHANCED SHARE PAGE (customer-friendly) ─────────────────────
+async function renderShareV3(params={}) {
+  const { id } = params;
+  setContent(`<div class="page"><div style="text-align:center;padding:80px 0"><div style="font-size:3rem">⏳</div></div></div>`);
+  const c = await getCatalogById(id);
+  if (!c) {
+    setContent(`<div class="page"><div class="empty"><div class="empty-icon">😕</div><div class="empty-title">Product not found</div><button class="btn-neon sm" onclick="navigate('home')">Go Home</button></div></div>`);
+    return;
+  }
+  incrementViews(id);
+  const sym    = CURRENCY_SYM[c.currency] || '₨';
+  const price  = c.resellerPrice || c.price || 0;
+  const images = c.images || [];
+
+  // Track ref code if present
+  const urlP = new URLSearchParams(window.location.search);
+  const ref   = urlP.get('ref');
+
+  setContent(`
+    <div style="min-height:100vh;background:var(--bg)">
+      <!-- Share hero -->
+      <div style="position:relative;overflow:hidden;padding:48px 20px 32px;text-align:center">
+        <div class="hero-orb hero-orb-1" style="opacity:0.1"></div>
+        <div class="hero-orb hero-orb-2" style="opacity:0.08"></div>
+
+        <div style="max-width:500px;margin:0 auto">
+          ${images.length > 0 ? `
+            <div style="position:relative;width:220px;height:220px;margin:0 auto 20px">
+              <img src="${images[0]}" class="share-img" alt="${c.title}"
+                style="width:220px;height:220px;cursor:zoom-in"
+                onclick="openLightbox(${JSON.stringify(images)}, 0)" />
+              ${images.length > 1 ? `
+                <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:20px;padding:3px 8px;font-size:0.7rem;color:#fff">
+                  +${images.length - 1} more
+                </div>` : ''}
+            </div>
+          ` : '<div style="width:200px;height:200px;border-radius:28px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:5rem;margin:0 auto 24px">📦</div>'}
+
+          ${images.length > 1 ? `
+            <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;overflow-x:auto;padding:4px">
+              ${images.map((img, i) => `
+                <img src="${img}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;cursor:zoom-in;border:2px solid ${i===0?'var(--blue)':'var(--border)'};flex-shrink:0"
+                  onclick="openLightbox(${JSON.stringify(images)}, ${i})" />`).join('')}
+            </div>
+            <div style="font-size:0.7rem;color:var(--text4);margin-bottom:12px">👆 Tap images to view full size</div>
+          ` : ''}
+
+          <span class="badge badge-${c.type||'physical'}" style="margin-bottom:12px">${c.type==='digital'?'⚡ Digital':'📦 Physical'}</span>
+          <h1 style="font-size:1.6rem;font-weight:900;margin:12px 0">${c.title}</h1>
+          ${c.description ? `<p style="color:var(--text3);font-size:0.9rem;margin-bottom:16px;line-height:1.6">${c.description}</p>` : ''}
+          <div class="share-price">${sym}${fmt(price)}</div>
+
+          <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn-neon lg" onclick="showOrderModal('${id}')">🛒 Order Now</button>
+          </div>
+
+          <!-- Tags -->
+          ${c.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px">${c.tags.map(t=>`<span class="badge" style="background:var(--glass);color:var(--text3)">#${t}</span>`).join('')}</div>` : ''}
+
+          <!-- Powered by -->
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border2)">
+            <div style="font-size:0.72rem;color:var(--text4);margin-bottom:6px">Powered by</div>
+            <a onclick="navigate('home')" style="font-weight:800;font-size:0.9rem" class="gradient-text">MICH Digital Shop</a>
+            <div style="font-size:0.72rem;color:var(--text4);margin-top:4px">Pakistan's #1 Reseller Marketplace</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+}
+
 // 9. INIT
 // ════════════════════════════════════════════════════════════════
 

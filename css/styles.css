@@ -692,3 +692,251 @@ select.input { background:var(--bg2); cursor:pointer; }
   cursor:wait;
   background:var(--bg3);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MICH Digital Shop v3 — UPGRADE ADDITIONS
+   Eid ul Adha Animations · Lightbox · Reseller Registration
+   Image Crop Preview · Catalog On/Off · SEO Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Eid ul Adha Banner ─────────────────────────────────────── */
+.eid-banner {
+  position:relative; z-index:200;
+  background:linear-gradient(135deg, #1a5f1a, #2d8a2d, #1a5f1a);
+  border-bottom:2px solid rgba(255,215,0,0.6);
+  padding:10px 16px;
+  animation:eid-glow 3s ease-in-out infinite;
+}
+.eid-banner-inner {
+  display:flex; align-items:center; justify-content:center;
+  gap:10px; max-width:1200px; margin:0 auto; position:relative;
+}
+.eid-text {
+  font-size:0.88rem; font-weight:700; color:#ffd700;
+  text-align:center; letter-spacing:0.5px;
+}
+.eid-anim {
+  font-size:1.3rem;
+  animation:eid-sway 2s ease-in-out infinite;
+}
+.eid-anim:last-of-type { animation-delay:0.5s; }
+.eid-close {
+  position:absolute; right:0; top:50%; transform:translateY(-50%);
+  background:rgba(0,0,0,0.3); border:none; color:#ffd700;
+  width:24px; height:24px; border-radius:50%; font-size:0.75rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+@keyframes eid-glow {
+  0%,100% { box-shadow:0 0 20px rgba(255,215,0,0.3); }
+  50%      { box-shadow:0 0 40px rgba(255,215,0,0.6); }
+}
+@keyframes eid-sway {
+  0%,100% { transform:rotate(-10deg); }
+  50%      { transform:rotate(10deg); }
+}
+
+/* ── Eid Hero Banner on Home Page ───────────────────────────── */
+.eid-hero-card {
+  background:linear-gradient(135deg, rgba(26,95,26,0.8), rgba(45,138,45,0.4));
+  border:2px solid rgba(255,215,0,0.5); border-radius:var(--radius-lg);
+  padding:24px; text-align:center; margin-bottom:24px; position:relative;
+  overflow:hidden;
+}
+.eid-hero-card::before {
+  content:'🌙⭐🌙⭐🌙';
+  position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+  font-size:1.2rem; letter-spacing:8px; opacity:0.6;
+}
+.eid-hero-title {
+  font-size:1.8rem; font-weight:900; color:#ffd700;
+  margin-bottom:8px; margin-top:16px;
+}
+.eid-hero-sub { color:rgba(255,255,255,0.85); font-size:0.9rem; margin-bottom:16px; }
+.eid-countdown { display:flex; gap:12px; justify-content:center; margin-bottom:16px; }
+.eid-count-item { text-align:center; }
+.eid-count-num { font-size:2rem; font-weight:900; color:#ffd700; }
+.eid-count-label { font-size:0.7rem; color:rgba(255,255,255,0.7); }
+.eid-sheep-anim { font-size:2.5rem; animation:sheep-walk 3s ease-in-out infinite; }
+@keyframes sheep-walk {
+  0%,100% { transform:translateX(-10px); }
+  50%      { transform:translateX(10px); }
+}
+
+/* ── Lightbox (Full Image View) ─────────────────────────────── */
+.lightbox {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(0,0,0,0.95); backdrop-filter:blur(10px);
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:16px;
+  animation:fade-in 0.25s ease;
+}
+.lightbox.hidden { display:none; }
+.lightbox img {
+  max-width:95vw; max-height:80vh; object-fit:contain;
+  border-radius:var(--radius); box-shadow:0 20px 60px rgba(0,0,0,0.8);
+  animation:slide-up 0.3s ease;
+}
+.lightbox-close {
+  position:absolute; top:16px; right:16px;
+  background:rgba(255,255,255,0.1); color:#fff; border:none;
+  width:44px; height:44px; border-radius:50%; font-size:1.2rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:var(--transition);
+}
+.lightbox-close:hover { background:rgba(255,255,255,0.2); }
+.lightbox-nav {
+  display:flex; align-items:center; gap:20px; color:#fff;
+}
+.lightbox-nav button {
+  background:rgba(255,255,255,0.1); color:#fff; border:none;
+  width:44px; height:44px; border-radius:50%; font-size:1.6rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:var(--transition);
+}
+.lightbox-nav button:hover { background:rgba(0,212,255,0.2); }
+#lightbox-counter { font-size:0.85rem; color:rgba(255,255,255,0.6); min-width:50px; text-align:center; }
+
+/* ── Image Full-View Thumb (tap to open lightbox) ───────────── */
+.img-thumb { cursor:zoom-in !important; }
+.img-main img { cursor:zoom-in; }
+
+/* ── Reseller Registration Card ─────────────────────────────── */
+.reseller-invest-card {
+  background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.1));
+  border:2px solid rgba(0,212,255,0.3); border-radius:var(--radius-lg);
+  padding:24px; margin-bottom:20px; text-align:center;
+}
+.reseller-invest-card h3 { font-size:1.2rem; font-weight:900; margin-bottom:8px; }
+.invest-amount {
+  font-size:3rem; font-weight:900; color:var(--blue);
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin:12px 0;
+}
+.jazzcash-number {
+  background:rgba(255,0,100,0.1); border:1px solid rgba(255,0,100,0.3);
+  border-radius:12px; padding:10px 20px; display:inline-block;
+  font-size:1.1rem; font-weight:800; color:#ff6496; margin:8px 0;
+  cursor:pointer; transition:var(--transition);
+}
+.jazzcash-number:hover { background:rgba(255,0,100,0.2); }
+
+/* ── Catalog On/Off Toggle ──────────────────────────────────── */
+.catalog-toggle {
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; user-select:none;
+}
+.toggle-switch {
+  width:46px; height:26px; background:rgba(255,255,255,0.1);
+  border-radius:13px; position:relative; transition:var(--transition);
+  border:1px solid rgba(255,255,255,0.15);
+}
+.toggle-switch.on { background:linear-gradient(135deg,var(--blue),var(--purple)); border-color:var(--blue); }
+.toggle-switch::after {
+  content:''; position:absolute;
+  width:20px; height:20px; border-radius:50%;
+  background:#fff; top:2px; left:2px;
+  transition:var(--transition);
+  box-shadow:0 2px 4px rgba(0,0,0,0.3);
+}
+.toggle-switch.on::after { left:22px; }
+
+/* ── Share Link Copy Box ─────────────────────────────────────── */
+.copy-link-box {
+  display:flex; gap:8px; align-items:center;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:12px; padding:10px 14px;
+  font-size:0.8rem; color:var(--text3); word-break:break-all;
+}
+.copy-link-btn {
+  flex-shrink:0; background:var(--blue-dim); border:1px solid rgba(0,212,255,0.3);
+  color:var(--blue); font-size:0.78rem; font-weight:600;
+  padding:6px 12px; border-radius:8px; cursor:pointer; transition:var(--transition);
+  white-space:nowrap;
+}
+.copy-link-btn:hover { background:rgba(0,212,255,0.2); }
+
+/* ── Social Share Buttons ────────────────────────────────────── */
+.social-share-row {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.share-btn {
+  flex:1; min-width:80px; display:flex; align-items:center;
+  justify-content:center; gap:6px; padding:10px 12px;
+  border-radius:var(--radius); font-size:0.8rem; font-weight:600;
+  transition:var(--transition); cursor:pointer; border:none;
+}
+.share-btn-wa   { background:#25d366; color:#fff; }
+.share-btn-tg   { background:#2ca5e0; color:#fff; }
+.share-btn-fb   { background:#1877f2; color:#fff; }
+.share-btn-copy { background:var(--glass); border:1px solid var(--border); color:var(--text2); }
+.share-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.3); }
+
+/* ── Order Tracking Timeline ─────────────────────────────────── */
+.order-timeline { display:flex; flex-direction:column; gap:0; margin-top:12px; }
+.timeline-item { display:flex; gap:12px; }
+.timeline-line {
+  display:flex; flex-direction:column; align-items:center; gap:0; width:20px; flex-shrink:0;
+}
+.timeline-dot {
+  width:14px; height:14px; border-radius:50%;
+  background:var(--border); border:2px solid var(--border);
+  flex-shrink:0; margin-top:3px;
+}
+.timeline-dot.done  { background:var(--green); border-color:var(--green); box-shadow:0 0 8px rgba(16,185,129,0.5); }
+.timeline-dot.active { background:var(--blue); border-color:var(--blue); animation:pulse-glow 2s infinite; }
+.timeline-connector { flex:1; width:2px; background:var(--border2); min-height:20px; }
+.timeline-connector.done { background:var(--green); }
+.timeline-content { flex:1; padding-bottom:16px; }
+.timeline-label { font-size:0.82rem; font-weight:600; color:var(--text2); }
+.timeline-time  { font-size:0.72rem; color:var(--text4); margin-top:2px; }
+
+/* ── Profit Hidden from Customer ─────────────────────────────── */
+/* Profit info is only shown to logged-in resellers/marketers in JS */
+
+/* ── Fast Loading Skeleton improvements ──────────────────────── */
+.skeleton-card {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden;
+}
+.skeleton-img { aspect-ratio:1; background:var(--bg3); }
+.skeleton-body { padding:12px; display:flex; flex-direction:column; gap:8px; }
+.skeleton-line { height:12px; border-radius:4px; }
+
+/* ── Sitemap Link (hidden, for crawlers) ─────────────────────── */
+a.sitemap-link { display:none; }
+
+/* ── Improved Mobile Image Preview ──────────────────────────── */
+@media(max-width:767px) {
+  .img-main { max-height:280px; }
+  .share-img { width:160px; height:160px; }
+}
+
+/* ── Catalog Active/Inactive Badge ──────────────────────────── */
+.catalog-status-active   { color:var(--green); font-size:0.72rem; font-weight:700; }
+.catalog-status-inactive { color:var(--red);   font-size:0.72rem; font-weight:700; }
+
+/* ── Splash v3 with tagline ─────────────────────────────────── */
+.splash-tagline {
+  font-size:0.82rem; color:var(--text3); margin-bottom:20px; margin-top:-10px;
+}
+
+/* ── Investment Flow Modal ───────────────────────────────────── */
+.invest-steps { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+.invest-step { display:flex; align-items:flex-start; gap:10px; }
+.invest-step-num {
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.78rem; font-weight:800;
+}
+.invest-step-text { font-size:0.85rem; color:var(--text2); padding-top:3px; }
+
+/* ── Earnings visibility for resellers only ─────────────────── */
+.customer-hidden { display:none; }
+
+/* ── Catalog Image Crop Hint ─────────────────────────────────── */
+.img-crop-hint {
+  font-size:0.72rem; color:var(--text4); text-align:center;
+  margin-top:6px; font-style:italic;
+}
