@@ -170,6 +170,14 @@ window.__profilePhotoUpload = async function(containerId, file) {
 let currentUser    = null;
 let userProfile    = null;
 let currentPage    = 'home';
+const urlParams = new URLSearchParams(window.location.search);
+
+const sharedCatalog = urlParams.get('share');
+const referralUser = urlParams.get('ref');
+
+if (referralUser) {
+  localStorage.setItem('refUser', referralUser);
+}
 let currentParams  = {};
 let allCatalogs    = [];   // cache
 let searchTimeout  = null;
@@ -424,7 +432,7 @@ function timeSince(ts) {
 }
 
 function generateShareUrl(id) {
-  return `${APP_URL}/?share=${id}`;
+  return `${APP_URL}/?share=${id}&ref=${currentUser?.uid || ''}`;
 }
 
 function shareOnWhatsApp(catalog) {
@@ -930,7 +938,7 @@ async function submitOrder(catalogId, title, price, currency, profit, type) {
   const data = {
     catalogId, catalogTitle:title, price, currency,
     profit: profit > 0 ? profit : 0,
-    resellerId: currentUser?.uid || null,
+    resellerId: localStorage.getItem('refUser') || currentUser?.uid || null,
     type,
     buyerPhone:   document.getElementById('o-phone')?.value || '',
     buyerName:    document.getElementById('o-name')?.value || '',
@@ -947,7 +955,18 @@ async function submitOrder(catalogId, title, price, currency, profit, type) {
 
   if (btn) { btn.disabled = true; btn.textContent = 'Placing Order...'; }
   try {
-    await createOrder(data);
+    const orderId = await createOrder(data);
+
+if (data.profit > 0 && data.resellerId) {
+  await fdb.collection('earnings').add({
+    userId: data.resellerId,
+    orderId: orderId,
+    catalogTitle: title,
+    amount: data.profit,
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
     closeModalForce();
     openModal(`
       <div class="modal-body" style="text-align:center;padding:40px 24px">
@@ -1912,7 +1931,7 @@ document.addEventListener('keydown', e => {
 
 // ─── EID UL ADHA COUNTDOWN ──────────────────────────────────────
 function getEidCountdown() {
-  const eidDate = new Date('2026-06-27T00:00:00');
+  const eidDate = new Date('2026-05-27T00:00:00');
   const now     = new Date();
   const diff    = eidDate - now;
   if (diff <= 0) return null; // Eid has started
@@ -1930,7 +1949,7 @@ function renderEidHeroCard() {
       <div class="eid-hero-card section">
         <div class="eid-sheep-anim">🐑</div>
         <div class="eid-hero-title">🌙 عید الاضحی مبارک! 🌙</div>
-        <div class="eid-hero-sub">Eid ul Adha Special Sale — 27-29 June 2026</div>
+        <div class="eid-hero-sub">Eid ul Adha Special Sale — 27-29 MAY 2026</div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button class="btn-neon lg" onclick="navigate('catalogs',{category:'eid'})">🐑 Eid Deals →</button>
           <button class="btn-outline lg" onclick="navigate('catalogs')">Browse All</button>
@@ -1941,7 +1960,7 @@ function renderEidHeroCard() {
     <div class="eid-hero-card section">
       <div class="eid-sheep-anim">🐑</div>
       <div class="eid-hero-title">🌙 Eid ul Adha Sale 🌙</div>
-      <div class="eid-hero-sub">Special discounts starting 27 June!</div>
+      <div class="eid-hero-sub">Special discounts starting 27 MAY!</div>
       <div class="eid-countdown">
         <div class="eid-count-item">
           <div class="eid-count-num">${cd.days}</div>
